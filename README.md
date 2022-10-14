@@ -1,11 +1,29 @@
-# Kubernetes-admin-toolkit (kat)
+# kubernetes-admin-toolkit (kat)
+
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/adegoodyer/kubernetes-admin-toolkit/build_and_push_container?label=pipeline) ![Docker Image Version](https://img.shields.io/docker/v/adegoodyer/kubernetes-admin-toolkit/latest) ![Docker Image Size](https://img.shields.io/docker/image-size/adegoodyer/kubernetes-admin-toolkit/latest?label=latest%20image%20size)
 
 ## Overview
 - container with various tools to assist in a kubernetes cluster administration/troubleshooting
 - GMT timezone and GB locale
 - additional tools pre-installed
-
 ## Deployment
+
+### Kubernetes
+
+```bash
+# run single command (change namespace if required)
+k -n default \
+run -i --tty --rm kubernetes-admin-toolkit-throwaway \
+--image=adegoodyer/kubernetes-admin-toolkit:latest \
+--restart=Never -- \
+curl -L --head google.co.uk
+
+# ephemeral pod (change namespace if required)
+k -n default \
+run -i --tty --rm kubernetes-admin-toolkit \
+--image=adegoodyer/kubernetes-admin-toolkit:latest \
+--restart=Never
+```
 
 ### Docker
 ```bash
@@ -18,15 +36,14 @@ curl -L --head google.co.uk
 # disposable container
 d run -it --rm \
 --name kubernetes-admin-toolkit-throwaway \
-adegoodyer/kubernetes-admin-toolkit:latest \
-/bin/bash
+adegoodyer/kubernetes-admin-toolkit:latest
 
 # persistent container
 d run -itd \
 --name kubernetes-admin-toolkit-latest \
 adegoodyer/kubernetes-admin-toolkit:latest
 
-# persistent container (host network)
+# persistent container (specify network)
 d run -itd \
 --network host \
 --name kubernetes-admin-toolkit-latest \
@@ -48,50 +65,6 @@ d stop kubernetes-admin-toolkit-latest && \
 d rm kubernetes-admin-toolkit-latest
 ```
 
-## Build Commands
-
-### Documentation
-```bash
-# generate grype, syft and README.md
-./scripts/gen-docs.sh
-```
-
-### Git
-- make code changes and push with git as usual
-- image build and push will occur when a tag is added
-  - can be any branch
-  - can be any format but must start with a 'v'
-```bash
-# add tag
-git tag -a v1.1.0 -m "v1.1.0"
-
-# push tag
-git push --follow-tags
-```
-
-### Docker
-```bash
-# build and test locally
-d build -t kubernetes-admin-toolkit:test . &&
-d run -it --rm \
---name kubernetes-admin-toolkit-test \
-kubernetes-admin-toolkit:test \
-/bin/bash
-
-# build image
-d build -t adegoodyer/kubernetes-admin-toolkit:v0.0.1 -t adegoodyer/kubernetes-admin-toolkit:latest .
-
-# sec scan
-grype adegoodyer/kubernetes-admin-toolkit:latest
-
-# generate SBOM
-syft adegoodyer/kubernetes-admin-toolkit:latest
-
-# push image
-d logout && d login --username=adegoodyer
-d push adegoodyer/ubuntu --all-tags
-```
-
 ## Security Scan
 ```bash
 NAME               INSTALLED                 FIXED-IN  TYPE  VULNERABILITY   SEVERITY   
@@ -100,9 +73,9 @@ gpgv               2.2.27-3ubuntu2.1                   deb   CVE-2022-3219   Low
 libapparmor1       3.0.4-2ubuntu2.1                    deb   CVE-2016-1585   Medium      
 libc-bin           2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
 libc6              2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
+libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
-libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
@@ -120,8 +93,8 @@ ncurses-base       6.3-2                               deb   CVE-2022-29458  Neg
 ncurses-bin        6.3-2                               deb   CVE-2022-29458  Negligible  
 passwd             1:4.8.1-2ubuntu2                    deb   CVE-2013-4235   Low         
 perl-base          5.34.0-3ubuntu1                     deb   CVE-2020-16156  Medium      
-unzip              6.0-26ubuntu3.1                     deb   CVE-2022-0530   Low         
 unzip              6.0-26ubuntu3.1                     deb   CVE-2021-4217   Low         
+unzip              6.0-26ubuntu3.1                     deb   CVE-2022-0530   Low         
 unzip              6.0-26ubuntu3.1                     deb   CVE-2022-0529   Medium      
 wget               1.21.2-2ubuntu1                     deb   CVE-2021-31879  Medium      
 zlib1g             1:1.2.11.dfsg-2ubuntu9.1            deb   CVE-2022-37434  Medium      
@@ -350,4 +323,49 @@ util-linux               2.37.2-4ubuntu3                          deb
 wget                     1.21.2-2ubuntu1                          deb   
 xdg-user-dirs            0.17-2ubuntu4                            deb   
 zlib1g                   1:1.2.11.dfsg-2ubuntu9.1                 deb   
+```
+
+## Build Commands
+
+### Documentation
+```bash
+# generate grype, syft and README.md
+./scripts/gen-docs.sh
+```
+
+### Git
+- make code changes and push with git as usual
+- image build and push will occur when a tag is added
+  - can be any branch
+  - can be any format but must start with a 'v'
+```bash
+# add tag
+git tag -a v1.1.0 -m "v1.1.0"
+
+# push tag
+git push --follow-tags
+```
+
+### Docker
+- [Dockerhub](https://hub.docker.com/repository/docker/adegoodyer/kubernetes-admin-toolkit)
+
+```bash
+# build and test locally
+d build -t kubernetes-admin-toolkit:test . &&
+d run -it --rm \
+--name kubernetes-admin-toolkit-test \
+kubernetes-admin-toolkit:test
+
+# build image
+d build -t adegoodyer/kubernetes-admin-toolkit:v0.0.1 -t adegoodyer/kubernetes-admin-toolkit:latest .
+
+# sec scan
+grype adegoodyer/kubernetes-admin-toolkit:latest
+
+# generate SBOM
+syft adegoodyer/kubernetes-admin-toolkit:latest
+
+# push image
+d logout && d login --username=adegoodyer
+d push adegoodyer/ubuntu --all-tags
 ```
