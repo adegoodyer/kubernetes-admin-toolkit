@@ -26,8 +26,27 @@ d run -itd \
 --name kubernetes-admin-toolkit-latest \
 adegoodyer/kubernetes-admin-toolkit:latest
 
+# persistent container (host network)
+d run -itd \
+--network host \
+--name kubernetes-admin-toolkit-latest \
+adegoodyer/kubernetes-admin-toolkit:latest
+
+# persistent container (network of another container)
+# (must change CONTAINER_NAME)
+d run -itd \
+--network container:CONTAINER_NAME \
+--name kubernetes-admin-toolkit-latest \
+adegoodyer/kubernetes-admin-toolkit:latest
+
 # connect to persistent container
 d exec -it kubernetes-admin-toolkit-latest /bin/bash
+
+# stop and remove persistent container
+# (d kill won't always remove)
+d stop kubernetes-admin-toolkit-latest && \
+d rm kubernetes-admin-toolkit-latest
+```
 ```
 
 ## Build Commands

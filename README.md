@@ -26,8 +26,26 @@ d run -itd \
 --name kubernetes-admin-toolkit-latest \
 adegoodyer/kubernetes-admin-toolkit:latest
 
+# persistent container (host network)
+d run -itd \
+--network host \
+--name kubernetes-admin-toolkit-latest \
+adegoodyer/kubernetes-admin-toolkit:latest
+
+# persistent container (network of another container)
+# (must change CONTAINER_NAME)
+d run -itd \
+--network container:CONTAINER_NAME \
+--name kubernetes-admin-toolkit-latest \
+adegoodyer/kubernetes-admin-toolkit:latest
+
 # connect to persistent container
 d exec -it kubernetes-admin-toolkit-latest /bin/bash
+
+# stop and remove persistent container
+# (d kill won't always remove)
+d stop kubernetes-admin-toolkit-latest && \
+d rm kubernetes-admin-toolkit-latest
 ```
 
 ## Build Commands
@@ -83,8 +101,8 @@ libapparmor1       3.0.4-2ubuntu2.1                    deb   CVE-2016-1585   Med
 libc-bin           2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
 libc6              2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
-libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
+libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
