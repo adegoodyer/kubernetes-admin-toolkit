@@ -16,16 +16,14 @@ ENV LANG en_GB.utf8
 ARG DEBIAN_FRONTEND=noninteractive
 
 # install apt packages
+# (dnsutils installs dig, host, nslookup and nsupdate)
 RUN apt-get update && apt-get install -y \
     curl \
-    dig \
     dnsutils \
     jq \
     mtr \
     netcat \
-    netstat \
     nmap \
-    nslookup \
     openssl \
     rsync \
     tcpdump \
