@@ -6,6 +6,21 @@
 - container with various tools to assist in a kubernetes cluster administration/troubleshooting
 - GMT timezone and GB locale
 - additional tools pre-installed
+
+```bash
+curl
+dnsutils
+jq
+mtr
+netcat
+nmap
+openssl
+rsync
+tcpdump
+traceroute
+wget
+unzip
+```
 ## Deployment
 
 ### Kubernetes
@@ -76,8 +91,8 @@ libc6              2.35-0ubuntu3.1                     deb   CVE-2016-20013  Neg
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
-libcairo2          1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
+libcairo2          1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
 libjbig0           2.1-3.1build3                       deb   CVE-2017-9937   Negligible  
 libjpeg-turbo8     2.1.2-0ubuntu1                      deb   CVE-2022-32325  Low         
@@ -93,9 +108,9 @@ ncurses-base       6.3-2                               deb   CVE-2022-29458  Neg
 ncurses-bin        6.3-2                               deb   CVE-2022-29458  Negligible  
 passwd             1:4.8.1-2ubuntu2                    deb   CVE-2013-4235   Low         
 perl-base          5.34.0-3ubuntu1                     deb   CVE-2020-16156  Medium      
-unzip              6.0-26ubuntu3.1                     deb   CVE-2021-4217   Low         
 unzip              6.0-26ubuntu3.1                     deb   CVE-2022-0530   Low         
 unzip              6.0-26ubuntu3.1                     deb   CVE-2022-0529   Medium      
+unzip              6.0-26ubuntu3.1                     deb   CVE-2021-4217   Low         
 wget               1.21.2-2ubuntu1                     deb   CVE-2021-31879  Medium      
 zlib1g             1:1.2.11.dfsg-2ubuntu9.1            deb   CVE-2022-37434  Medium      
 ```
