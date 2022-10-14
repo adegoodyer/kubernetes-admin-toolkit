@@ -16,9 +16,7 @@ ENV LANG en_GB.utf8
 ARG DEBIAN_FRONTEND=noninteractive
 
 # install apt packages
-RUN apt update \
-    && apt upgrade -y \
-    && apt install -y -qq \
+RUN apt-get update && apt-get install -y \
     curl \
     dig \
     dnsutils \
