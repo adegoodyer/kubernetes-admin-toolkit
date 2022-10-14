@@ -1,4 +1,10 @@
-# Kubernetes-admin-toolkit (kat)
+# kubernetes-admin-toolkit (kat)
+
+https://img.shields.io/github/workflow/status/adegoodyer/kubernetes-admin-toolkit/build_and_push_container?label=pipeline&style=flat-square
+
+https://img.shields.io/docker/image-size/adegoodyer/kubernetes-admin-toolkit/latest?label=latest%20image%20size
+
+https://img.shields.io/docker/v/adegoodyer/kubernetes-admin-toolkit/latest
 
 ## Overview
 - container with various tools to assist in a kubernetes cluster administration/troubleshooting
