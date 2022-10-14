@@ -41,15 +41,14 @@ curl -L --head google.co.uk
 # disposable container
 d run -it --rm \
 --name kubernetes-admin-toolkit-throwaway \
-adegoodyer/kubernetes-admin-toolkit:latest \
-/bin/bash
+adegoodyer/kubernetes-admin-toolkit:latest
 
 # persistent container
 d run -itd \
 --name kubernetes-admin-toolkit-latest \
 adegoodyer/kubernetes-admin-toolkit:latest
 
-# persistent container (host network)
+# persistent container (specify network)
 d run -itd \
 --network host \
 --name kubernetes-admin-toolkit-latest \
@@ -69,7 +68,6 @@ d exec -it kubernetes-admin-toolkit-latest /bin/bash
 # (d kill won't always remove)
 d stop kubernetes-admin-toolkit-latest && \
 d rm kubernetes-admin-toolkit-latest
-```
 ```
 
 ## Build Commands
@@ -99,8 +97,7 @@ git push --follow-tags
 d build -t kubernetes-admin-toolkit:test . &&
 d run -it --rm \
 --name kubernetes-admin-toolkit-test \
-kubernetes-admin-toolkit:test \
-/bin/bash
+kubernetes-admin-toolkit:test
 
 # build image
 d build -t adegoodyer/kubernetes-admin-toolkit:v0.0.1 -t adegoodyer/kubernetes-admin-toolkit:latest .
