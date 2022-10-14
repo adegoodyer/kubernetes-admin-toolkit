@@ -6,3 +6,19 @@
 - container with various tools to assist in a kubernetes cluster administration/troubleshooting
 - GMT timezone and GB locale
 - additional tools pre-installed
+
+### Tooling
+```bash
+curl
+dnsutils
+jq
+mtr
+netcat
+nmap
+openssl
+rsync
+tcpdump
+traceroute
+wget
+unzip
+```
