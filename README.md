@@ -1,6 +1,6 @@
-# kubernetes-admin-toolkit (kat)
+# kubernetes-admin-toolkit
 
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/adegoodyer/kubernetes-admin-toolkit/build_and_push_container?label=pipeline) ![Docker Image Version](https://img.shields.io/docker/v/adegoodyer/kubernetes-admin-toolkit/latest) ![Docker Image Size](https://img.shields.io/docker/image-size/adegoodyer/kubernetes-admin-toolkit/latest?label=latest%20image%20size)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/adegoodyer/kubernetes-admin-toolkit/build_and_push_container?label=pipeline) ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/adegoodyer/kubernetes-admin-toolkit) ![Docker Image Size](https://img.shields.io/docker/image-size/adegoodyer/kubernetes-admin-toolkit/latest?label=latest%20image%20size)
 
 ## Overview
 - container with various tools to assist in a kubernetes cluster administration/troubleshooting
@@ -73,9 +73,9 @@ gpgv               2.2.27-3ubuntu2.1                   deb   CVE-2022-3219   Low
 libapparmor1       3.0.4-2ubuntu2.1                    deb   CVE-2016-1585   Medium      
 libc-bin           2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
 libc6              2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
+libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
-libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
 libcairo2          1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
