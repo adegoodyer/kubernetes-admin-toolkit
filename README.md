@@ -7,6 +7,7 @@
 - GMT timezone and GB locale
 - additional tools pre-installed
 
+### Tooling
 ```bash
 curl
 dnsutils
@@ -25,19 +26,28 @@ unzip
 
 ### Kubernetes
 
+> Uses Default namespace so change if required
+
 ```bash
-# run single command (change namespace if required)
-k -n default \
-run -i --tty --rm kubernetes-admin-toolkit-throwaway \
+# start pod, execute command, exit and remove pod
+k run -i --tty --rm k8s-toolkit \
 --image=adegoodyer/kubernetes-admin-toolkit:latest \
 --restart=Never -- \
 curl -L --head google.co.uk
 
-# ephemeral pod (change namespace if required)
-k -n default \
-run -i --tty --rm kubernetes-admin-toolkit \
+# start pod, open shell
+k run -i --tty --rm k8s-toolkit \
 --image=adegoodyer/kubernetes-admin-toolkit:latest \
 --restart=Never
+
+# execute command on running pod
+k exec k8s-toolkit -- ps aux
+
+# open shell on running pod
+k exec --stdin --tty k8s-toolkit -- /bin/bash
+
+# stop and remove pod
+k delete po k8s-toolkit
 ```
 
 ### Docker
@@ -82,37 +92,37 @@ d rm kubernetes-admin-toolkit-latest
 
 ## Security Scan
 ```bash
-NAME               INSTALLED                 FIXED-IN  TYPE  VULNERABILITY   SEVERITY   
-coreutils          8.32-4.1ubuntu1                     deb   CVE-2016-2781   Low         
-gpgv               2.2.27-3ubuntu2.1                   deb   CVE-2022-3219   Low         
-libapparmor1       3.0.4-2ubuntu2.1                    deb   CVE-2016-1585   Medium      
-libc-bin           2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
-libc6              2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
-libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
-libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
-libcairo-gobject2  1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
-libcairo2          1.16.0-5ubuntu2                     deb   CVE-2017-7475   Low         
-libcairo2          1.16.0-5ubuntu2                     deb   CVE-2018-18064  Low         
-libcairo2          1.16.0-5ubuntu2                     deb   CVE-2019-6461   Low         
-libjbig0           2.1-3.1build3                       deb   CVE-2017-9937   Negligible  
-libjpeg-turbo8     2.1.2-0ubuntu1                      deb   CVE-2022-32325  Low         
-libncurses6        6.3-2                               deb   CVE-2022-29458  Negligible  
-libncursesw6       6.3-2                               deb   CVE-2022-29458  Negligible  
-libpcre3           2:8.39-13ubuntu0.22.04.1            deb   CVE-2017-11164  Negligible  
-libtiff5           4.3.0-6ubuntu0.1                    deb   CVE-2018-10126  Low         
-libtiff5           4.3.0-6ubuntu0.1                    deb   CVE-2022-1210   Low         
-libtinfo6          6.3-2                               deb   CVE-2022-29458  Negligible  
-locales            2.35-0ubuntu3.1                     deb   CVE-2016-20013  Negligible  
-login              1:4.8.1-2ubuntu2                    deb   CVE-2013-4235   Low         
-ncurses-base       6.3-2                               deb   CVE-2022-29458  Negligible  
-ncurses-bin        6.3-2                               deb   CVE-2022-29458  Negligible  
-passwd             1:4.8.1-2ubuntu2                    deb   CVE-2013-4235   Low         
-perl-base          5.34.0-3ubuntu1                     deb   CVE-2020-16156  Medium      
-unzip              6.0-26ubuntu3.1                     deb   CVE-2022-0530   Low         
-unzip              6.0-26ubuntu3.1                     deb   CVE-2022-0529   Medium      
-unzip              6.0-26ubuntu3.1                     deb   CVE-2021-4217   Low         
-wget               1.21.2-2ubuntu1                     deb   CVE-2021-31879  Medium      
-zlib1g             1:1.2.11.dfsg-2ubuntu9.1            deb   CVE-2022-37434  Medium      
+NAME               INSTALLED                 FIXED-IN                  TYPE  VULNERABILITY   SEVERITY   
+coreutils          8.32-4.1ubuntu1                                     deb   CVE-2016-2781   Low         
+gpgv               2.2.27-3ubuntu2.1                                   deb   CVE-2022-3219   Low         
+libapparmor1       3.0.4-2ubuntu2.1                                    deb   CVE-2016-1585   Medium      
+libc-bin           2.35-0ubuntu3.1                                     deb   CVE-2016-20013  Negligible  
+libc6              2.35-0ubuntu3.1                                     deb   CVE-2016-20013  Negligible  
+libcairo-gobject2  1.16.0-5ubuntu2                                     deb   CVE-2017-7475   Low         
+libcairo-gobject2  1.16.0-5ubuntu2                                     deb   CVE-2018-18064  Low         
+libcairo-gobject2  1.16.0-5ubuntu2                                     deb   CVE-2019-6461   Low         
+libcairo2          1.16.0-5ubuntu2                                     deb   CVE-2019-6461   Low         
+libcairo2          1.16.0-5ubuntu2                                     deb   CVE-2017-7475   Low         
+libcairo2          1.16.0-5ubuntu2                                     deb   CVE-2018-18064  Low         
+libjbig0           2.1-3.1build3                                       deb   CVE-2017-9937   Negligible  
+libjpeg-turbo8     2.1.2-0ubuntu1                                      deb   CVE-2022-32325  Low         
+libncurses6        6.3-2                                               deb   CVE-2022-29458  Negligible  
+libncursesw6       6.3-2                                               deb   CVE-2022-29458  Negligible  
+libpcre3           2:8.39-13ubuntu0.22.04.1                            deb   CVE-2017-11164  Negligible  
+libssl3            3.0.2-0ubuntu1.6                                    deb   CVE-2022-3358   Low         
+libtiff5           4.3.0-6ubuntu0.1                                    deb   CVE-2018-10126  Low         
+libtiff5           4.3.0-6ubuntu0.1                                    deb   CVE-2022-1210   Low         
+libtinfo6          6.3-2                                               deb   CVE-2022-29458  Negligible  
+libxml2            2.9.13+dfsg-1ubuntu0.1                              deb   CVE-2022-2309   Low         
+locales            2.35-0ubuntu3.1                                     deb   CVE-2016-20013  Negligible  
+login              1:4.8.1-2ubuntu2                                    deb   CVE-2013-4235   Low         
+ncurses-base       6.3-2                                               deb   CVE-2022-29458  Negligible  
+ncurses-bin        6.3-2                                               deb   CVE-2022-29458  Negligible  
+openssl            3.0.2-0ubuntu1.6                                    deb   CVE-2022-3358   Low         
+passwd             1:4.8.1-2ubuntu2                                    deb   CVE-2013-4235   Low         
+perl-base          5.34.0-3ubuntu1           5.34.0-3ubuntu1.1         deb   CVE-2020-16156  Medium      
+wget               1.21.2-2ubuntu1                                     deb   CVE-2021-31879  Medium      
+zlib1g             1:1.2.11.dfsg-2ubuntu9.1  1:1.2.11.dfsg-2ubuntu9.2  deb   CVE-2022-37434  Medium      
 ```
 
 ## SBOM
