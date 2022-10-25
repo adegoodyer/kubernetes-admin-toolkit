@@ -2,19 +2,28 @@
 
 ### Kubernetes
 
+> Uses Default namespace so change if required
+
 ```bash
-# run single command (change namespace if required)
-k -n default \
-run -i --tty --rm kubernetes-admin-toolkit-throwaway \
+# start pod, execute command, exit and remove pod
+k run -i --tty --rm k8s-toolkit \
 --image=adegoodyer/kubernetes-admin-toolkit:latest \
 --restart=Never -- \
 curl -L --head google.co.uk
 
-# ephemeral pod (change namespace if required)
-k -n default \
-run -i --tty --rm kubernetes-admin-toolkit \
+# start pod, open shell
+k run -i --tty --rm k8s-toolkit \
 --image=adegoodyer/kubernetes-admin-toolkit:latest \
 --restart=Never
+
+# execute command on running pod
+k exec k8s-toolkit -- ps aux
+
+# open shell on running pod
+k exec --stdin --tty k8s-toolkit -- /bin/bash
+
+# stop and remove pod
+k delete po k8s-toolkit
 ```
 
 ### Docker
