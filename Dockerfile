@@ -19,17 +19,21 @@ ARG DEBIAN_FRONTEND=noninteractive
 # (dnsutils installs dig, host, nslookup and nsupdate)
 RUN apt-get update && apt-get install -y \
     curl \
+    duf \
     dnsutils \
+    host \
+    hyperfine \
     jq \
     mtr \
-    netcat \
     nmap \
     openssl \
     rsync \
     tcpdump \
     traceroute \
-    wget \
-    unzip \
+    wget
+
+RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq \
+    && chmod +x /usr/bin/yq \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
