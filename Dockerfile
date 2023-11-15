@@ -40,4 +40,7 @@ RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+# download AWS regional cert (Dublin) to connect to AWS RDS Postgres over SSL/TLS
+RUN curl -o ./eu-west-2-bundle.pem https://truststore.pki.rds.amazonaws.com/eu-west-2/eu-west-2-bundle.pem
+
 CMD ["bash"]
