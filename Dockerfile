@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ENV HOME=/
 ENV TMPDIR=/tmp
@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
   duf \
   dnsutils \
   host \
+  iputils-ping \
   hyperfine \
   jq \
   mtr \
@@ -31,6 +32,7 @@ RUN apt-get update && apt-get install -y \
   postgresql \
   rsync \
   tcpdump \
+	telnet \
   traceroute \
   unzip \
   wget
