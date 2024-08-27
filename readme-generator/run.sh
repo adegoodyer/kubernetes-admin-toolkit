@@ -25,12 +25,14 @@ fi
 
 # dependency checks
 check_envars "CONTAINER_REPO" "CONTAINER_TAG"
+check_envars "GIT_REPO" "GIT_TAG"
+check_envars "OUTPUT_PATH"
 check_toolchain grype syft
 
 printf "\nGenerating Sections..\n"
 
 # @TODO render_title
-cat partials/title.md | sed -e "s/{{TITLE}}/$GIT_REPO/g" > README.md
+cat partials/title.md | sed -e "s/{{TITLE}}/$GIT_REPO/g" > "${OUTPUT_PATH}"
 
 # @TODO fix render_section to handle key-values
 render_section "shields"

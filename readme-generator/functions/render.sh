@@ -2,7 +2,7 @@
 # takes container in format repo:tag as input
 render_sbom() {
   local container="$1"
-  local readme_file="README.md"
+  local readme_file="${OUTPUT_PATH}"
 
   printf 'Generating SBOM..\n'
   printf '\n## SBOM\n\n```bash\n' >> "$readme_file"
@@ -15,7 +15,7 @@ render_sbom() {
 # takes container in format repo:tag as input
 render_sec_scan() {
   local container="$1"
-  local readme_file="README.md"
+  local readme_file="${OUTPUT_PATH}"
 
   printf "Scanning packages..\n"
   printf '\n## Security Scan\n\n```bash\n' >> "$readme_file"
