@@ -29,40 +29,17 @@ check_toolchain grype syft
 
 printf "\nGenerating Sections..\n"
 
-# Title
-printf " Title..\t\t"
-cat partials/title.md >README.md
-printf "Done\n"
-
+# @TODO render_title
 cat partials/title.md | sed -e "s/{{TITLE}}/$GIT_REPO/g" > README.md
 
-# Shields
-printf " Shields..\t\t"
-cat partials/shields.md >>README.md
-printf "Done\n"
+# @TODO fix render_section to handle key-values
+render_section "shields"
+render_section "overview"
+render_section "usage"
 
-# Overview
-printf " Overview..\t\t"
-cat partials/overview.md >>README.md
-printf "Done\n"
-
-# Usage
-printf " Generating Usage..\t"
-cat partials/usage.md >>README.md
-printf "Done\n"
-
-# # SBOM
-# printf 'Generating SBOM..\n'
-# printf '\n## SBOM\n\n```bash\n' >>README.md
-# syft scan adegoodyer/kubernetes-admin-toolkit:"${KAT_VERSION}" >>README.md
-# printf '```\n' >>README.md
-# printf "Done\n"
-#
-# # Security Scan
-# printf "Scanning packages..\n"
-# printf '\n## Security Scan\n\n```bash\n' >>README.md
-# grype adegoodyer/kubernetes-admin-toolkit:"${KAT_VERSION}" >>README.md
-# printf '```\n' >>README.md
-# printf "Done\n"
+# @TODO build before sbom? - to make sure doesn't freeze?
+# docker build -t ${CONTAINER_REPO}:${CONTAINER_TAG} ../Dockerfile
+render_sbom "${CONTAINER_REPO}:${CONTAINER_TAG}"
+render_sec_scan "${CONTAINER_REPO}:${CONTAINER_TAG}"
 
 printf "\nREADME.md generated successfully.\n"
