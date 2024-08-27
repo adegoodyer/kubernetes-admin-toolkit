@@ -10,11 +10,12 @@
 WORKING_DIR="$(dirname "$(realpath "$0")")"
 cd "$WORKING_DIR" || exit
 
-# source shell files
-source "${WORKING_DIR}/functions/checks.sh"
-source "${WORKING_DIR}/functions/outputs.sh"
+# source functions
+for file in "${WORKING_DIR}/functions/"*.sh; do
+  source "$file"
+done
 
-# source .env
+# source env
 if [ -f "${WORKING_DIR}/.env" ]; then
   source "${WORKING_DIR}/.env"
 else
