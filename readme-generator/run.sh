@@ -23,7 +23,7 @@ else
 fi
 
 # initial checks
-check_envar "TEST"
+check_envars "ONE" "TWO"
 check_toolchain grype syft
 
 printf "\nGenerating Sections..\n"
