@@ -23,8 +23,8 @@ else
   exit 1
 fi
 
-# initial checks
-check_envars "ONE" "TWO"
+# dependency checks
+check_envars "CONTAINER_REPO" "CONTAINER_TAG"
 check_toolchain grype syft
 
 printf "\nGenerating Sections..\n"
