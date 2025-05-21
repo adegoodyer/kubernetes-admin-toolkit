@@ -1,3 +1,4 @@
+# https://ubuntu.com/about/release-cycle
 FROM ubuntu:24.04
 
 ENV HOME=/
@@ -35,7 +36,7 @@ RUN apt-get update && apt-get install -y \
   postgresql \
   rsync \
   tcpdump \
-	telnet \
+  telnet \
   traceroute \
   unzip \
   wget
@@ -45,6 +46,17 @@ RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
   && chmod +x /usr/bin/yq \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+# install Go and add to root PATH
+# https://go.dev/doc/devel/release
+ENV GO_VERSION=1.24.0
+RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz \
+  && tar -C /usr/local -xzf /tmp/go.tar.gz \
+  && rm /tmp/go.tar.gz
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+# install NATS CLI via Go directly to /usr/local/bin
+RUN GOBIN=/usr/local/bin go install github.com/nats-io/natscli/nats@latest
 
 # download AWS regional cert (Dublin) to connect to AWS RDS Postgres over SSL/TLS
 RUN curl -o ./eu-west-2-bundle.pem https://truststore.pki.rds.amazonaws.com/eu-west-2/eu-west-2-bundle.pem
