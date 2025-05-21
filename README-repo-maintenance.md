@@ -6,7 +6,7 @@
   - can be any format but must start with a 'v'
 - [adegoodyer/kubernetes-admin-toolkit](https://hub.docker.com/repository/docker/adegoodyer/kubernetes-admin-toolkit)
 
-## Process
+## Testing and Documentation Generation
 ```bash
 # make changes to Dockerfile
 
@@ -33,7 +33,7 @@ git push --follow-tags
 # commit/push documentation changes to git
 ```
 
-### Manually Build/Pushing
+## Build and Push Image
 
 ```bash
 # build image
@@ -55,4 +55,25 @@ d push adegoodyer/kubernetes-admin-toolkit --all-tags
 
 # test
 kat
+```
+
+## GitHub Release
+```bash
+# draft bew release
+# https://github.com/adegoodyer/kubernetes-admin-toolkit/releases/new
+
+# choose tag
+v1.1.4
+
+# choose title
+v1.1.4
+
+# choose description
+Release Notes:
+
+Date:   May 21, 2025
+Author: Ade Goodyer adriangoodyer@gmail.com
+
+- added nats and telnet CLI tools
+- refined docs and README generation
 ```
