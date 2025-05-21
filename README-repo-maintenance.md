@@ -18,8 +18,8 @@ kubernetes-admin-toolkit:testing
 
 # add/commit Dockerfile changes
 
-# add tag
-git tag -a v1.1.1.4 -m "v1.1.4"
+# add tags
+git tag -a v1.1.4 -m "v1.1.4"
 
 # push tag
 git push --follow-tags
@@ -37,7 +37,9 @@ git push --follow-tags
 
 ```bash
 # build image
-d build -t adegoodyer/kubernetes-admin-toolkit:v1.1.4 -t adegoodyer/kubernetes-admin-toolkit:latest .
+d build \
+-t adegoodyer/kubernetes-admin-toolkit:v1.1.4 \
+-t adegoodyer/kubernetes-admin-toolkit:latest .
 
 # sec scan
 grype adegoodyer/kubernetes-admin-toolkit:latest
@@ -45,7 +47,12 @@ grype adegoodyer/kubernetes-admin-toolkit:latest
 # generate SBOM
 syft adegoodyer/kubernetes-admin-toolkit:latest
 
+# cleanup local test containers/images
+
 # push image
 d logout && d login --username=adegoodyer
-d push adegoodyer/ubuntu --all-tags
+d push adegoodyer/kubernetes-admin-toolkit --all-tags
+
+# test
+kat
 ```
