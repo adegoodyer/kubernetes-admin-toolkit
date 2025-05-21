@@ -19,7 +19,7 @@ kubernetes-admin-toolkit:testing
 # add/commit Dockerfile changes
 
 # add tag
-git tag -a v1.1.1 -m "v1.1.1"
+git tag -a v1.1.1.4 -m "v1.1.4"
 
 # push tag
 git push --follow-tags
@@ -37,7 +37,7 @@ git push --follow-tags
 
 ```bash
 # build image
-d build -t adegoodyer/kubernetes-admin-toolkit:v0.0.1 -t adegoodyer/kubernetes-admin-toolkit:latest .
+d build -t adegoodyer/kubernetes-admin-toolkit:v1.1.4 -t adegoodyer/kubernetes-admin-toolkit:latest .
 
 # sec scan
 grype adegoodyer/kubernetes-admin-toolkit:latest

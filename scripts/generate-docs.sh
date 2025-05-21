@@ -12,7 +12,7 @@ printf '\n## Security Scan\n```bash\n' >>README.md
 grype adegoodyer/kubernetes-admin-toolkit:latest | tee -a README.md
 printf '```\n' >>README.md
 
-# SMOB
+# SBOM
 printf '\n## SBOM\n```bash\n' >>README.md
 syft adegoodyer/kubernetes-admin-toolkit:latest | tee -a README.md
 printf '```\n' >>README.md
