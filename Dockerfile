@@ -1,5 +1,5 @@
 # https://ubuntu.com/about/release-cycle
-FROM ubuntu:24.04
+FROM ubuntu:24.10
 
 ENV HOME=/
 ENV TMPDIR=/tmp
