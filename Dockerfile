@@ -55,6 +55,9 @@ RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz 
   && rm /tmp/go.tar.gz
 ENV PATH="/usr/local/go/bin:${PATH}"
 
+# install MinIO CLI via Go directly to /usr/local/bin
+RUN GOBIN=/usr/local/bin go install github.com/minio/mc@latest
+
 # install NATS CLI via Go directly to /usr/local/bin
 RUN GOBIN=/usr/local/bin go install github.com/nats-io/natscli/nats@latest
 
