@@ -13,7 +13,7 @@ kubernetes-admin-toolkit:testing
 # commit Dockerfile changes
 
 # build image
-docker build -t adegoodyer/kubernetes-admin-toolkit:v1.1.5 -t adegoodyer/kubernetes-admin-toolkit:latest .
+docker build -t adegoodyer/kubernetes-admin-toolkit:v1.1.6 -t adegoodyer/kubernetes-admin-toolkit:latest .
 
 # sec scan (optional)
 grype adegoodyer/kubernetes-admin-toolkit:latest
@@ -39,7 +39,7 @@ https://hub.docker.com/repository/docker/adegoodyer/kubernetes-admin-toolkit
 # merge branch to master and delete
 
 # add tag
-git tag -a v1.1.5 -m "v1.1.5"
+git tag -a v1.1.6 -m "v1.1.6"
 
 # push tag
 git push --follow-tags

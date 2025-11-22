@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y \
   nmap \
   openssl \
   postgresql \
+  sqlite3 \
   rsync \
   tcpdump \
   telnet \

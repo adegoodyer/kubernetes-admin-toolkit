@@ -22,6 +22,7 @@ nmap
 openssl
 psql
 rsync
+sqlite3
 tcpdump
 traceroute
 unzip

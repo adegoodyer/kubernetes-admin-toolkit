@@ -22,6 +22,7 @@ nmap
 openssl
 psql
 rsync
+sqlite3
 tcpdump
 traceroute
 unzip
@@ -824,6 +825,7 @@ sed                                               4.9-2build1                   
 sensible-utils                                    0.0.22                                   deb                          
 session-migration                                 0.3.9build1                              deb                          
 shared-mime-info                                  2.4-4                                    deb                          
+sqlite3                                           3.45.1-1ubuntu2.5                        deb                          
 ssl-cert                                          1.1.2ubuntu1                             deb                          
 stdlib                                            go1.17                                   go-module                    
 stdlib                                            go1.22.2                                 go-module                    
