@@ -2,10 +2,10 @@
 # generates the README.md file for the project
 
 # Intro
-cat readme-partials/intro >README.md
+cat readme-partials/intro.md >README.md
 
 # Deployments
-cat readme-partials/usage >>README.md
+cat readme-partials/usage.md >>README.md
 
 # Security Scan
 printf '\n## Security Scan\n```bash\n' >>README.md
@@ -18,4 +18,4 @@ syft adegoodyer/kubernetes-admin-toolkit:latest | tee -a README.md
 printf '```\n' >>README.md
 
 # Build commands
-cat readme-partials/repo-maintenance >README-repo-maintenance.md
+cat readme-partials/repo-maintenance.md >README-repo-maintenance.md

@@ -14,6 +14,7 @@ dnsutils
 host
 hyperfine
 jq
+mc
 mtr
 nats (via Go install)
 netcat

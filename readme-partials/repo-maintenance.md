@@ -11,7 +11,7 @@
 # make changes to Dockerfile
 
 # build image and test locally
-docker build -t kubernetes-admin-toolkit:testing . &&
+docker build -t kubernetes-admin-toolkit:testing . && \
 docker run -it --rm \
 --name kubernetes-admin-toolkit-testing \
 kubernetes-admin-toolkit:testing
@@ -19,7 +19,7 @@ kubernetes-admin-toolkit:testing
 # add/commit Dockerfile changes
 
 # add tag
-git tag -a v1.1.1.4 -m "v1.1.4"
+git tag -a v1.1.1.5 -m "v1.1.5"
 
 # push tag
 git push --follow-tags
@@ -33,11 +33,11 @@ git push --follow-tags
 # commit/push documentation changes to git
 ```
 
-### Manually Build/Pushing
+### Manual Build and Push
 
 ```bash
 # build image
-d build -t adegoodyer/kubernetes-admin-toolkit:v1.1.4 -t adegoodyer/kubernetes-admin-toolkit:latest .
+docker build -t adegoodyer/kubernetes-admin-toolkit:v1.1.5 -t adegoodyer/kubernetes-admin-toolkit:latest .
 
 # sec scan
 grype adegoodyer/kubernetes-admin-toolkit:latest
@@ -46,6 +46,9 @@ grype adegoodyer/kubernetes-admin-toolkit:latest
 syft adegoodyer/kubernetes-admin-toolkit:latest
 
 # push image
-d logout && d login --username=adegoodyer
-d push adegoodyer/ubuntu --all-tags
+docker logout && docker login --username=adegoodyer
+docker push adegoodyer/kubernetes-admin-toolkit --all-tags
+
+# verify on Docker Hub
+https://hub.docker.com/repository/docker/adegoodyer/kubernetes-admin-toolkit
 ```
