@@ -2,28 +2,31 @@
 
 ### Kubernetes
 ```bash
-# start pod, execute command, exit and remove pod
-k run -i --tty --rm kubernetes-admin-toolkit \
+# one-off command
+k run -i --tty --rm k8s-toolkit \
 --image=adegoodyer/kubernetes-admin-toolkit:latest \
 --restart=Never -- \
 curl -L --head google.co.uk
 
-# start pod, open shell
-k run -i --tty --rm kubernetes-admin-toolkit \
+# interactive shell (removes pod after exiting shell)
+k run -i --tty --rm k8s-toolkit \
 --image=adegoodyer/kubernetes-admin-toolkit:latest \
 --restart=Never
 
-# execute command on running pod
-k exec kubernetes-admin-toolkit -- ps aux
+# long-running pod (no interactive shell, need to exec in later)
+k run k8s-toolkit \
+--image=adegoodyer/kubernetes-admin-toolkit:latest \
+--restart=Never --command -- \
+tail -f /dev/null
+
+# execute subsequent commands on running pod
+k exec k8s-toolkit -- ps aux
 
 # open shell on running pod
-k exec --stdin --tty kubernetes-admin-toolkit -- /bin/bash
+k exec --stdin --tty k8s-toolkit -- /bin/bash
 
-# stop and remove pod
-k delete po kubernetes-admin-toolkit
-
-# alias (add to your .bashrc, .bash_profile, .zshrc etc)
-alias kat="kubectl run -i --tty --rm ades-kubernetes-admin-toolkit --image=adegoodyer/kubernetes-admin-toolkit:latest --restart=Never"
+# remove pod
+k delete po k8s-toolkit
 ```
 
 ### Docker
