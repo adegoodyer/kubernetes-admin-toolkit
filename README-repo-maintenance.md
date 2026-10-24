@@ -94,7 +94,10 @@ CI logs in with the repo secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.
 Rotate the token by generating a new one, running step 3 again, and revoking the old one on Docker Hub.
 
 ### Renovate
-1. Install the [Renovate GitHub App](https://github.com/apps/renovate) and give it access to this repository.
-2. Renovate opens a **Dependency Dashboard** issue listing every tracked dependency. Updates arrive as PRs on Monday mornings.
+Renovate runs from the self-hosted instance in the private `proxmox-three` repo (`platform/renovate/renovatejob-kubernetes-admin-toolkit.yaml`), as the GitHub App `proxmox-three-renovate`, every Monday at 06:00 UK.
+
+1. On GitHub, go to **Settings → Applications → proxmox-three-renovate → Configure**, and add `kubernetes-admin-toolkit` under **Repository access**.
+2. Merge the RenovateJob in `proxmox-three` so Argo CD deploys it.
+3. Start the first run from the operator UI (**run now**) rather than waiting for Monday. Renovate opens a **Dependency Dashboard** issue here listing every tracked dependency, then PRs labelled `dependencies`.
 
 Configuration is in [renovate.json](renovate.json).

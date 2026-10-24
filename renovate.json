@@ -1,14 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Run by the self-hosted Renovate in proxmox-three (platform/renovate), Mondays 06:00 UK - that job is the only schedule",
   "extends": [
     "config:recommended",
     "docker:pinDigests",
     "helpers:pinGitHubActionDigests"
   ],
   "timezone": "Europe/London",
-  "schedule": [
-    "before 6am on monday"
-  ],
   "labels": [
     "dependencies"
   ],
