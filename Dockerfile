@@ -38,6 +38,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # upgrade picks up security patches for packages already in the base image;
 # dnsutils installs dig, host, nslookup and nsupdate
+# iproute2 installs ip and ss
 # iputils-ping installs ping
 # netcat-traditional instead of openbsd:
 # https://www.geeksforgeeks.org/how-to-switch-to-netcat-traditional-in-ubuntu/
@@ -50,6 +51,7 @@ RUN apt-get update \
     duf \
     host \
     hyperfine \
+    iproute2 \
     iputils-ping \
     jq \
     locales \

@@ -8,7 +8,7 @@ PLATFORM=${2:-}
 
 docker run --rm ${PLATFORM:+--platform "$PLATFORM"} "$IMAGE" bash -euo pipefail -c '
   missing=0
-  for cmd in curl wget jq yq dig host nslookup ping mtr nc nmap openssl psql sqlite3 \
+  for cmd in curl wget jq yq dig host nslookup ping ip ss mtr nc nmap openssl psql pg_isready sqlite3 \
              rsync tcpdump telnet traceroute unzip duf hyperfine mc nats; do
     command -v "$cmd" >/dev/null || { echo "missing: $cmd"; missing=1; }
   done
