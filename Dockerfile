@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
  && mkdir /out && find /go/bin -type f -exec cp {} /out/ \;
 
 # https://ubuntu.com/about/release-cycle
-FROM ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
+FROM ubuntu:26.04@sha256:c098726dd9b9733f3e885f8de0ef375206a311b0a317eadc40d347b1115fb944
 
 ENV HOME=/
 ENV TMPDIR=/tmp
