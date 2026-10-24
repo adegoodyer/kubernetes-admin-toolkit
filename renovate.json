@@ -4,7 +4,8 @@
   "extends": [
     "config:recommended",
     "docker:pinDigests",
-    "helpers:pinGitHubActionDigests"
+    "helpers:pinGitHubActionDigests",
+    ":disableRateLimiting"
   ],
   "timezone": "Europe/London",
   "labels": [
