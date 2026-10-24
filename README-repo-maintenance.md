@@ -15,7 +15,7 @@ All three paths run the same workflow, [.github/workflows/build.yml](.github/wor
 ## Where Versions Live
 | What                   | Where                                                            | Updated by               |
 | ---------------------- | ---------------------------------------------------------------- | ------------------------ |
-| Ubuntu base image      | `FROM ubuntu:24.04@sha256:...` in [Dockerfile](Dockerfile)       | Renovate (digest)        |
+| Ubuntu base image      | `FROM ubuntu:26.04@sha256:...` in [Dockerfile](Dockerfile)       | Renovate (digest)        |
 | Go used to build tools | `FROM golang:...` in [Dockerfile](Dockerfile)                    | Renovate                 |
 | yq, nats               | `ARG YQ_VERSION`, `ARG NATS_VERSION` with `# renovate:` comments | Renovate                 |
 | mc                     | `ARG MC_VERSION`                                                 | Fixed; upstream archived |

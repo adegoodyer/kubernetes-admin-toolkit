@@ -37,7 +37,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # upgrade picks up security patches for packages already in the base image;
-# dnsutils installs dig, host, nslookup and nsupdate
+# bind9-dnsutils installs dig, nslookup and nsupdate; bind9-host installs host
 # iproute2 installs ip and ss
 # iputils-ping installs ping
 # netcat-traditional instead of openbsd:
@@ -45,11 +45,11 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update \
  && apt-get upgrade -y \
  && apt-get install -y --no-install-recommends \
+    bind9-dnsutils \
+    bind9-host \
     ca-certificates \
     curl \
-    dnsutils \
     duf \
-    host \
     hyperfine \
     iproute2 \
     iputils-ping \
@@ -67,7 +67,7 @@ RUN apt-get update \
     traceroute \
     unzip \
     wget \
- && localedef -i en_GB -c -f UTF-8 -A /usr/share/locale/locale.alias en_GB.UTF-8 \
+ && localedef -i en_GB -c -f UTF-8 en_GB.UTF-8 \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=tools /out/ /usr/local/bin/

@@ -2,7 +2,7 @@
 
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/adegoodyer/kubernetes-admin-toolkit) ![Docker Image Size](https://img.shields.io/docker/image-size/adegoodyer/kubernetes-admin-toolkit/latest?label=latest%20image%20size)
 
-A small Ubuntu 24.04 image of network, database and messaging tools for debugging inside Kubernetes clusters and Docker networks.
+A small Ubuntu 26.04 image of network, database and messaging tools for debugging inside Kubernetes clusters and Docker networks.
 
 - `linux/amd64` and `linux/arm64`
 - GMT timezone and `en_GB` locale
@@ -30,7 +30,7 @@ Then see the [command cheat sheet](docs/commands.md) or the [troubleshooting gui
 | Connectivity   | `ip`, `ss`, `ping`, `nc` (netcat-traditional), `telnet`, `traceroute`, `mtr`, `nmap` |
 | HTTP and TLS   | `curl`, `wget`, `openssl`                                                |
 | Packet capture | `tcpdump`                                                                |
-| Databases      | `psql`, `pg_isready`, `pg_dump` (PostgreSQL 16 client), `sqlite3`        |
+| Databases      | `psql`, `pg_isready`, `pg_dump` (PostgreSQL 18 client), `sqlite3`        |
 | Object storage | `mc` (MinIO client, final release; upstream is archived)                 |
 | Messaging      | `nats`                                                                   |
 | Data           | `jq`, `yq`                                                               |
