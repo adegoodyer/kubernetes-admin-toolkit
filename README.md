@@ -71,6 +71,32 @@ k exec --stdin --tty k8s-toolkit -- /bin/bash
 k delete po k8s-toolkit
 ```
 
+### Kubernetes (least privilege)
+[k8s/toolkit-pod.yaml](k8s/toolkit-pod.yaml) runs the toolkit with resource limits, all capabilities dropped except `NET_RAW`, no service account token, and a one-hour lifetime.
+```bash
+k apply -n NAMESPACE -f k8s/toolkit-pod.yaml
+k exec -n NAMESPACE -it k8s-toolkit -- bash
+k delete -n NAMESPACE po k8s-toolkit
+
+# tcpdump needs -Z root under these restrictions
+tcpdump -Z root -i any -n port 5432
+```
+
+### Kubernetes (kubectl debug)
+Attach the toolkit to an existing pod or node instead of running a separate pod.
+```bash
+# ephemeral container sharing a pod's network and process namespace
+k debug -it POD_NAME \
+--image=adegoodyer/kubernetes-admin-toolkit:latest \
+--target=CONTAINER_NAME \
+--profile=netadmin
+
+# debug a node (host namespaces, node filesystem mounted at /host)
+k debug node/NODE_NAME -it \
+--image=adegoodyer/kubernetes-admin-toolkit:latest \
+--profile=sysadmin
+```
+
 ### Docker
 ```bash
 # run single command

@@ -1,0 +1,37 @@
+# Short-lived toolkit pod with limited privileges.
+#   kubectl apply -n NAMESPACE -f k8s/toolkit-pod.yaml
+#   kubectl exec -n NAMESPACE -it k8s-toolkit -- bash
+#   kubectl delete -n NAMESPACE pod k8s-toolkit
+# The pod is killed automatically after activeDeadlineSeconds (1 hour).
+# Works under the "baseline" Pod Security Standard; NET_RAW is not allowed under "restricted".
+apiVersion: v1
+kind: Pod
+metadata:
+  name: k8s-toolkit
+  labels:
+    app.kubernetes.io/name: kubernetes-admin-toolkit
+spec:
+  restartPolicy: Never
+  activeDeadlineSeconds: 3600
+  terminationGracePeriodSeconds: 0
+  automountServiceAccountToken: false
+  containers:
+    - name: toolkit
+      image: adegoodyer/kubernetes-admin-toolkit:latest
+      command: ["sleep", "infinity"]
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: "1"
+          memory: 512Mi
+      securityContext:
+        allowPrivilegeEscalation: false
+        seccompProfile:
+          type: RuntimeDefault
+        capabilities:
+          drop: ["ALL"]
+          # ping, mtr, nmap and tcpdump need raw sockets
+          # (run tcpdump with -Z root, as it cannot switch user without SETUID/SETGID)
+          add: ["NET_RAW"]
