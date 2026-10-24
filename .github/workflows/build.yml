@@ -16,6 +16,11 @@ on:
   schedule:
     - cron: "0 3 * * 1" # Mondays 03:00 UTC
   workflow_dispatch:
+    inputs:
+      test-notification:
+        description: Only send a test Gotify notification (no build)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -32,6 +37,7 @@ env:
 
 jobs:
   build:
+    if: ${{ !inputs.test-notification }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -117,3 +123,43 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           sbom: true
           provenance: mode=max
+
+  # Alert on Gotify when a weekly, manual or release build fails. PR failures show on the PR instead.
+  # Needs the repo secret GOTIFY_TOKEN (a Gotify application token); skipped if it isn't set.
+  notify:
+    needs: build
+    if: ${{ always() && github.event_name != 'pull_request' && (contains(fromJSON('["failure","cancelled"]'), needs.build.result) || inputs.test-notification) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Send Gotify notification
+        env:
+          GOTIFY_URL: https://gotify.adegoodyer.com/message
+          GOTIFY_TOKEN: ${{ secrets.GOTIFY_TOKEN }}
+          RESULT: ${{ needs.build.result }}
+          TEST: ${{ inputs.test-notification }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TRIGGER: ${{ github.event_name }} (${{ github.ref_name }})
+        run: |
+          if [ -z "$GOTIFY_TOKEN" ]; then
+            echo "::warning::GOTIFY_TOKEN is not set, skipping notification"
+            exit 0
+          fi
+          if [ "$TEST" = "true" ]; then
+            title="🔔 kubernetes-admin-toolkit test notification"
+            message="Gotify alerts from GitHub Actions are working. [View run]($RUN_URL)"
+            priority=4
+          else
+            title="❌ kubernetes-admin-toolkit build $RESULT"
+            message="**$TRIGGER** did not complete. [View run]($RUN_URL)"
+            priority=8
+          fi
+          jq -n --arg title "$title" --arg message "$message" --argjson priority "$priority" --arg url "$RUN_URL" '{
+            title: $title, message: $message, priority: $priority,
+            extras: {
+              "client::display": {contentType: "text/markdown"},
+              "client::notification": {click: {url: $url}}
+            }
+          }' | curl -sS --fail-with-body -X POST "$GOTIFY_URL" \
+                 -H "X-Gotify-Key: $GOTIFY_TOKEN" -H "Content-Type: application/json" -d @- >/dev/null
+          echo "notification sent"

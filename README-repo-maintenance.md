@@ -77,6 +77,16 @@ gh workflow run build.yml --ref master
 gh run watch
 ```
 
+## Failure Alerts
+If a weekly, manual or release build fails, the workflow sends a Gotify notification (priority 8) with a link to the run. PR failures aren't sent; they show on the PR.
+
+```bash
+# send a test notification without building anything
+gh workflow run build.yml --ref master -f test-notification=true
+```
+
+GitHub turns off scheduled workflows in public repos after 60 days without commits. Merged Renovate PRs count as commits, but if the weekly build stops running, re-enable it under **Actions → Build**.
+
 ## One-Time Setup
 
 ### Docker Hub
@@ -101,3 +111,13 @@ Renovate runs from the self-hosted instance in the private `proxmox-three` repo 
 3. Start the first run from the operator UI (**run now**) rather than waiting for Monday. Renovate opens a **Dependency Dashboard** issue here listing every tracked dependency, then PRs labelled `dependencies`.
 
 Configuration is in [renovate.json](renovate.json).
+
+### Gotify
+1. In Gotify (https://gotify.adegoodyer.com), go to **Apps → Create Application**. Name it `kubernetes-admin-toolkit` and copy its token.
+2. Save it to the repo:
+   ```bash
+   gh secret set GOTIFY_TOKEN    # paste the token when prompted
+   ```
+3. Send a test: `gh workflow run build.yml --ref master -f test-notification=true`
+
+Without the secret, the notification step logs a warning and the build is unaffected.
