@@ -1,0 +1,6 @@
+.git
+.github
+README*.md
+readme-partials
+k8s
+renovate.json

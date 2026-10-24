@@ -1,68 +1,76 @@
+# Go tools are built in a separate stage so the Go toolchain never ships in the final image.
+# The builder runs on the build machine's platform and cross-compiles for the target.
+FROM --platform=$BUILDPLATFORM golang:1.27.3-bookworm@sha256:972b4110ba0f47539a975c31e52c64765e1ff19f2d74469ae4a595c6676e80a5 AS tools
+
+ARG TARGETOS
+ARG TARGETARCH
+
+# renovate: datasource=github-releases depName=mikefarah/yq
+ARG YQ_VERSION=v4.54.1
+# renovate: datasource=github-releases depName=nats-io/natscli
+ARG NATS_VERSION=v0.5.0
+# minio/mc was archived in Nov 2025; this is its final release.
+ARG MC_VERSION=RELEASE.2025-08-13T08-35-41Z
+
+ENV CGO_ENABLED=0 GOFLAGS=-trimpath
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    export GOOS=$TARGETOS GOARCH=$TARGETARCH \
+ && go install github.com/mikefarah/yq/v4@${YQ_VERSION} \
+ && go install github.com/nats-io/natscli/nats@${NATS_VERSION} \
+ && go install -ldflags "-X github.com/minio/mc/cmd.ReleaseTag=${MC_VERSION}" github.com/minio/mc@${MC_VERSION} \
+ # cross-compiled binaries land in bin/<os>_<arch>/, native ones in bin/
+ && mkdir /out && find /go/bin -type f -exec cp {} /out/ \;
+
 # https://ubuntu.com/about/release-cycle
-FROM ubuntu:24.04
+FROM ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac
 
 ENV HOME=/
 ENV TMPDIR=/tmp
 ENV TZ=Etc/GMT
-
-# set timezone
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-# set locale
-RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* \
-  && localedef -i en_GB -c -f UTF-8 -A /usr/share/locale/locale.alias en_GB.UTF-8
 ENV LANG="en_GB.utf8"
 
 # set zero interaction envar during build process only
 ARG DEBIAN_FRONTEND=noninteractive
 
-# install apt packages
+# set timezone
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# upgrade picks up security patches for packages already in the base image;
 # dnsutils installs dig, host, nslookup and nsupdate
 # iputils-ping installs ping
-RUN apt-get update && apt-get install -y \
-  curl \
-  duf \
-  dnsutils \
-  host \
-  iputils-ping \
-  hyperfine \
-  jq \
-  mtr \
-  # use traditional version instead of openbsd
-  # https://www.geeksforgeeks.org/how-to-switch-to-netcat-traditional-in-ubuntu/
-  netcat-traditional \
-  nmap \
-  openssl \
-  postgresql \
-  sqlite3 \
-  rsync \
-  tcpdump \
-  telnet \
-  traceroute \
-  unzip \
-  wget
+# netcat-traditional instead of openbsd:
+# https://www.geeksforgeeks.org/how-to-switch-to-netcat-traditional-in-ubuntu/
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    dnsutils \
+    duf \
+    host \
+    hyperfine \
+    iputils-ping \
+    jq \
+    locales \
+    mtr-tiny \
+    netcat-traditional \
+    nmap \
+    openssl \
+    postgresql-client \
+    rsync \
+    sqlite3 \
+    tcpdump \
+    telnet \
+    traceroute \
+    unzip \
+    wget \
+ && localedef -i en_GB -c -f UTF-8 -A /usr/share/locale/locale.alias en_GB.UTF-8 \
+ && rm -rf /var/lib/apt/lists/*
 
-# yq
-RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq \
-  && chmod +x /usr/bin/yq \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+COPY --from=tools /out/ /usr/local/bin/
 
-# install Go and add to root PATH
-# https://go.dev/doc/devel/release
-ENV GO_VERSION=1.24.0
-RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz -O /tmp/go.tar.gz \
-  && tar -C /usr/local -xzf /tmp/go.tar.gz \
-  && rm /tmp/go.tar.gz
-ENV PATH="/usr/local/go/bin:${PATH}"
-
-# install MinIO CLI via Go directly to /usr/local/bin
-RUN GOBIN=/usr/local/bin go install github.com/minio/mc@latest
-
-# install NATS CLI via Go directly to /usr/local/bin
-RUN GOBIN=/usr/local/bin go install github.com/nats-io/natscli/nats@latest
-
-# download AWS regional cert (eu-west-2, London) to connect to AWS RDS Postgres over SSL/TLS
-RUN curl -o ./eu-west-2-bundle.pem https://truststore.pki.rds.amazonaws.com/eu-west-2/eu-west-2-bundle.pem
+# AWS RDS regional cert bundle (eu-west-2, London) to connect to RDS Postgres over SSL/TLS
+ADD --chmod=644 https://truststore.pki.rds.amazonaws.com/eu-west-2/eu-west-2-bundle.pem /eu-west-2-bundle.pem
 
 CMD ["bash"]
