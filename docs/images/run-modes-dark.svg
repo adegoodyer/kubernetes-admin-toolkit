@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 990 400" role="img" aria-label="Three ways to run the toolkit: as its own pod reaching the app over the network, as an ephemeral container inside the app pod sharing its network and processes, or as a node debug pod using the node's network and filesystem.">
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; fill: #1f2328; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .title { font-size: 15px; font-weight: 600; }
+    .cmd { font-size: 12px; fill: #59636e; }
+    .label { font-size: 11px; fill: #59636e; }
+    .chip-text { font-size: 13px; }
+    .note { font-size: 12px; fill: #59636e; }
+    .acc-text { fill: #0969da; font-weight: 600; }
+    .node { fill: none; stroke: #8c959f; stroke-dasharray: 6 4; }
+    .pod { fill: none; stroke: #8c959f; }
+    .chip { fill: #f6f8fa; stroke: #d1d9e0; }
+    .acc { fill: #ddf4ff; stroke: #0969da; }
+    .ns { fill: none; stroke: #0969da; stroke-dasharray: 4 3; }
+    .arrow { stroke: #59636e; stroke-width: 1.5; fill: none; }
+    .head { fill: #59636e; }
+      text { fill: #e6edf3; }
+      .cmd, .label, .note { fill: #9198a1; }
+      .acc-text { fill: #4493f8; }
+      .node, .pod { stroke: #656c76; }
+      .chip { fill: #151b23; stroke: #3d444d; }
+      .acc { fill: #0d2149; stroke: #4493f8; }
+      .ns { stroke: #4493f8; }
+      .arrow { stroke: #9198a1; }
+      .head { fill: #9198a1; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+
+  <!-- A: separate pod -->
+  <g>
+    <text class="title" x="165" y="28" text-anchor="middle">Separate pod</text>
+    <text class="cmd mono" x="165" y="50" text-anchor="middle">kubectl run / apply</text>
+    <rect class="node" x="15" y="66" width="300" height="262" rx="10"/>
+    <text class="label" x="27" y="84">node</text>
+
+    <rect class="pod" x="55" y="96" width="220" height="74" rx="8"/>
+    <text class="label" x="67" y="113">app pod</text>
+    <rect class="chip" x="75" y="122" width="180" height="34" rx="6"/>
+    <text class="chip-text" x="165" y="144" text-anchor="middle">app</text>
+
+    <rect class="pod" x="55" y="236" width="220" height="74" rx="8"/>
+    <text class="label" x="67" y="253">toolkit pod</text>
+    <rect class="acc" x="75" y="262" width="180" height="34" rx="6"/>
+    <text class="chip-text acc-text" x="165" y="284" text-anchor="middle">toolkit</text>
+
+    <line class="arrow" x1="165" y1="236" x2="165" y2="172" marker-end="url(#arrow)"/>
+    <text class="label" x="175" y="200">Service or pod IP</text>
+    <text class="label" x="175" y="215">(crosses the network)</text>
+
+    <text class="note" x="165" y="352" text-anchor="middle">Own network namespace.</text>
+    <text class="note" x="165" y="370" text-anchor="middle">NetworkPolicy applies to its labels.</text>
+  </g>
+
+  <!-- B: ephemeral container -->
+  <g>
+    <text class="title" x="495" y="28" text-anchor="middle">Ephemeral container</text>
+    <text class="cmd mono" x="495" y="50" text-anchor="middle">kubectl debug POD --target=APP</text>
+    <rect class="node" x="345" y="66" width="300" height="262" rx="10"/>
+    <text class="label" x="357" y="84">node</text>
+
+    <rect class="pod" x="375" y="96" width="240" height="214" rx="8"/>
+    <text class="label" x="387" y="113">app pod</text>
+    <rect class="ns" x="390" y="122" width="210" height="176" rx="6"/>
+    <rect class="chip" x="415" y="136" width="160" height="34" rx="6"/>
+    <text class="chip-text" x="495" y="158" text-anchor="middle">app</text>
+    <rect class="acc" x="415" y="226" width="160" height="34" rx="6"/>
+    <text class="chip-text acc-text" x="495" y="248" text-anchor="middle">toolkit</text>
+
+    <line class="arrow" x1="495" y1="226" x2="495" y2="172" marker-end="url(#arrow)"/>
+    <text class="label" x="505" y="203">localhost</text>
+    <text class="label acc-text" x="495" y="285" text-anchor="middle">shared network + processes</text>
+
+    <text class="note" x="495" y="352" text-anchor="middle">Sees the app on localhost and its</text>
+    <text class="note" x="495" y="370" text-anchor="middle">processes. Works on distroless images.</text>
+  </g>
+
+  <!-- C: node debug -->
+  <g>
+    <text class="title" x="825" y="28" text-anchor="middle">Node debug</text>
+    <text class="cmd mono" x="825" y="50" text-anchor="middle">kubectl debug node/NODE</text>
+    <rect class="node" x="675" y="66" width="300" height="262" rx="10"/>
+    <text class="label" x="687" y="84">node</text>
+
+    <rect class="chip" x="695" y="104" width="125" height="46" rx="6"/>
+    <text class="chip-text" x="757" y="124" text-anchor="middle">node network</text>
+    <text class="label" x="757" y="140" text-anchor="middle">eth0, cni0, routes</text>
+    <rect class="chip" x="830" y="104" width="125" height="46" rx="6"/>
+    <text class="chip-text" x="892" y="124" text-anchor="middle">node files</text>
+    <text class="label" x="892" y="140" text-anchor="middle">kubelet logs, config</text>
+
+    <rect class="pod" x="715" y="236" width="220" height="74" rx="8"/>
+    <text class="label" x="727" y="253">debug pod</text>
+    <rect class="acc" x="735" y="262" width="180" height="34" rx="6"/>
+    <text class="chip-text acc-text" x="825" y="284" text-anchor="middle">toolkit</text>
+
+    <line class="arrow" x1="785" y1="236" x2="760" y2="152" marker-end="url(#arrow)"/>
+    <text class="label" x="700" y="200">host network</text>
+    <line class="arrow" x1="865" y1="236" x2="890" y2="152" marker-end="url(#arrow)"/>
+    <text class="label mono" x="884" y="200">/host</text>
+
+    <text class="note" x="825" y="352" text-anchor="middle">Sees every pod's traffic on the node,</text>
+    <text class="note" x="825" y="370" text-anchor="middle">plus the node filesystem at /host.</text>
+  </g>
+</svg>

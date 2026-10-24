@@ -1,47 +1,100 @@
 # Repo Maintenance
 
-## Routine updates (automated)
-- **Renovate** opens PRs when the base images, yq, nats or GitHub Actions have new versions.
-- **CI** builds each PR for amd64 and arm64 and runs `scripts/smoke-test.sh`. Review and merge if green.
-- **Weekly** (Mondays 03:00 UTC) CI rebuilds master to pick up Ubuntu patches and pushes `latest`, `weekly` and `weekly-YYYYMMDD`.
+## How Images Are Built and Published
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/release-pipeline-dark.svg">
+  <img alt="Pull requests are built and tested but publish nothing; version tags publish vX.Y.Z and latest; the weekly rebuild of master publishes latest, weekly and weekly-date." src="docs/images/release-pipeline-light.svg">
+</picture>
 
-## Making a change
+All three paths run the same workflow, [.github/workflows/build.yml](.github/workflows/build.yml). An image is only pushed after both architectures pass [scripts/smoke-test.sh](scripts/smoke-test.sh).
+
+- **Renovate** opens PRs on Monday mornings when the base images, yq, nats or GitHub Actions have new versions. Review and merge if CI is green.
+- **Weekly rebuild** (Mondays 03:00 UTC) rebuilds master to pick up Ubuntu security patches. No action needed.
+- **Releases** happen when you push a `vX.Y.Z` tag.
+
+## Where Versions Live
+| What                   | Where                                                            | Updated by               |
+| ---------------------- | ---------------------------------------------------------------- | ------------------------ |
+| Ubuntu base image      | `FROM ubuntu:24.04@sha256:...` in [Dockerfile](Dockerfile)       | Renovate (digest)        |
+| Go used to build tools | `FROM golang:...` in [Dockerfile](Dockerfile)                    | Renovate                 |
+| yq, nats               | `ARG YQ_VERSION`, `ARG NATS_VERSION` with `# renovate:` comments | Renovate                 |
+| mc                     | `ARG MC_VERSION`                                                 | Fixed; upstream archived |
+| apt packages           | Not pinned                                                       | Weekly rebuild           |
+| GitHub Actions         | [.github/workflows/build.yml](.github/workflows/build.yml)       | Renovate (digest)        |
+
+To track a new Go tool with Renovate, add an `ARG` with a comment above it in the same format:
+```dockerfile
+# renovate: datasource=github-releases depName=OWNER/REPO
+ARG TOOL_VERSION=v1.2.3
+```
+
+## Making a Change
 ```bash
-# create new branch
 git switch -c my-change
 
-# make changes to Dockerfile
-
-# build image and test locally
-docker build -t kubernetes-admin-toolkit:testing . && \
+# edit the Dockerfile, then build and test locally
+docker build -t kubernetes-admin-toolkit:testing .
 ./scripts/smoke-test.sh kubernetes-admin-toolkit:testing
 
-# interactive check (optional)
+# poke around (optional)
 docker run -it --rm kubernetes-admin-toolkit:testing
 
-# push branch and open a PR - CI builds and tests both architectures
+# open a PR - CI builds and tests amd64 and arm64
 git push -u origin my-change
 gh pr create --fill
 
-# merge PR once CI passes
+# merge once CI passes
 gh pr merge --squash --delete-branch
+```
+
+When adding a tool, also add it to the `for cmd in ...` list in [scripts/smoke-test.sh](scripts/smoke-test.sh) and the table in [README.md](README.md#whats-inside).
+
+Local builds are amd64 only unless QEMU is set up. To test arm64 locally:
+```bash
+docker run --privileged --rm tonistiigi/binfmt --install arm64
+docker buildx build --platform linux/arm64 --load -t kubernetes-admin-toolkit:arm64 .
+./scripts/smoke-test.sh kubernetes-admin-toolkit:arm64 linux/arm64
 ```
 
 ## Releasing
 ```bash
 git switch master && git pull
 
-# tag - CI builds, tests and pushes vX.Y.Z and latest to Docker Hub
+# CI builds, tests and pushes vX.Y.Z and latest
 git tag -a v1.2.0 -m "v1.2.0"
 git push origin v1.2.0
 
-# create release on GitHub
+# watch the run, then create the GitHub release
+gh run watch
 gh release create v1.2.0 --generate-notes
-
-# verify on Docker Hub
-# https://hub.docker.com/repository/docker/adegoodyer/kubernetes-admin-toolkit
 ```
 
-## One-time setup
-- Repo secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` (a Docker Hub access token)
-- Install the [Renovate GitHub App](https://github.com/apps/renovate) on this repo
+Check the result on [Docker Hub](https://hub.docker.com/r/adegoodyer/kubernetes-admin-toolkit/tags).
+
+## Running the Weekly Build by Hand
+```bash
+gh workflow run build.yml --ref master
+gh run watch
+```
+
+## One-Time Setup
+
+### Docker Hub
+CI logs in with the repo secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`.
+
+1. On Docker Hub, go to **Account settings → Personal access tokens → Generate new token**.
+2. Description `github-actions kubernetes-admin-toolkit`, access **Read & Write**, and an expiry date you'll remember to renew.
+3. Save it to the repo:
+   ```bash
+   gh secret set DOCKERHUB_USERNAME --body adegoodyer
+   gh secret set DOCKERHUB_TOKEN    # paste the token when prompted
+   ```
+4. Check it works: `gh workflow run build.yml --ref master`, then look for a green **Login to Docker Hub** step.
+
+Rotate the token by generating a new one, running step 3 again, and revoking the old one on Docker Hub.
+
+### Renovate
+1. Install the [Renovate GitHub App](https://github.com/apps/renovate) and give it access to this repository.
+2. Renovate opens a **Dependency Dashboard** issue listing every tracked dependency. Updates arrive as PRs on Monday mornings.
+
+Configuration is in [renovate.json](renovate.json).
