@@ -6,7 +6,7 @@
   <img alt="Pull requests are built and tested but publish nothing; version tags publish vX.Y.Z and latest; the weekly rebuild of master publishes latest, weekly and weekly-date." src="docs/images/release-pipeline-light.svg">
 </picture>
 
-All three paths run the same workflow, [.github/workflows/build.yml](.github/workflows/build.yml). An image is only pushed after both architectures pass [scripts/smoke-test.sh](scripts/smoke-test.sh).
+All three paths run the same workflow, [.github/workflows/build.yml](.github/workflows/build.yml). An image is only pushed after both architectures pass [scripts/smoke-test.sh](scripts/smoke-test.sh). Branch protection on `master` requires the `build` check to pass before any PR can be merged, admins included.
 
 - **Renovate** opens PRs on Monday mornings when the base images, yq, nats or GitHub Actions have new versions. Review and merge if CI is green.
 - **Weekly rebuild** (Mondays 03:00 UTC) rebuilds master to pick up Ubuntu security patches. No action needed.
