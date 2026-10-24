@@ -62,7 +62,7 @@ RUN GOBIN=/usr/local/bin go install github.com/minio/mc@latest
 # install NATS CLI via Go directly to /usr/local/bin
 RUN GOBIN=/usr/local/bin go install github.com/nats-io/natscli/nats@latest
 
-# download AWS regional cert (Dublin) to connect to AWS RDS Postgres over SSL/TLS
+# download AWS regional cert (eu-west-2, London) to connect to AWS RDS Postgres over SSL/TLS
 RUN curl -o ./eu-west-2-bundle.pem https://truststore.pki.rds.amazonaws.com/eu-west-2/eu-west-2-bundle.pem
 
 CMD ["bash"]
