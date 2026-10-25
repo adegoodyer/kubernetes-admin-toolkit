@@ -1,16 +1,12 @@
 name: Build
 
-# - Pull request touching the image: build and test both architectures, push nothing.
+# - Pull request: build and test both architectures, push nothing. Runs on every PR because
+#   "build" is a required check on master, and a required check that never runs blocks the merge.
 # - vX.Y.Z git tag: build, test, push vX.Y.Z and latest.
 # - Weekly (and on demand from master): rebuild to pick up Ubuntu patches,
 #   push latest, weekly and weekly-YYYYMMDD.
 on:
   pull_request:
-    paths:
-      - Dockerfile
-      - .dockerignore
-      - scripts/smoke-test.sh
-      - .github/workflows/build.yml
   push:
     tags: ["v*"]
   schedule:
