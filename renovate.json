@@ -7,6 +7,7 @@
     "helpers:pinGitHubActionDigests",
     ":disableRateLimiting"
   ],
+  "dependencyDashboard": false,
   "timezone": "Europe/London",
   "labels": [
     "dependencies"

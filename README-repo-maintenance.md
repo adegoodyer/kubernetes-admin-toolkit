@@ -108,7 +108,7 @@ Renovate runs from the self-hosted instance in the private `proxmox-three` repo 
 
 1. On GitHub, go to **Settings → Applications → proxmox-three-renovate → Configure**, and add `kubernetes-admin-toolkit` under **Repository access**.
 2. Merge the RenovateJob in `proxmox-three` so Argo CD deploys it.
-3. Start the first run from the operator UI (**run now**) rather than waiting for Monday. Renovate opens a **Dependency Dashboard** issue here listing every tracked dependency, then PRs labelled `dependencies`.
+3. Start the first run from the operator UI (**run now**) rather than waiting for Monday. Renovate opens PRs labelled `dependencies` - no Dependency Dashboard issue (`dependencyDashboard: false`).
 
 Configuration is in [renovate.json](renovate.json).
 
