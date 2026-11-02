@@ -1,6 +1,6 @@
 # Go tools are built in a separate stage so the Go toolchain never ships in the final image.
 # The builder runs on the build machine's platform and cross-compiles for the target.
-FROM --platform=$BUILDPLATFORM golang:1.27.3-bookworm@sha256:972b4110ba0f47539a975c31e52c64765e1ff19f2d74469ae4a595c6676e80a5 AS tools
+FROM --platform=$BUILDPLATFORM golang:1.27.3-bookworm@sha256:d9b6a1beb9474adc2a1ce842573639b44b2a0dd49b6669f51d3821baf9ec37c9 AS tools
 
 ARG TARGETOS
 ARG TARGETARCH
