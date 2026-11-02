@@ -2,12 +2,16 @@ name: Build
 
 # - Pull request: build and test both architectures, push nothing. Runs on every PR because
 #   "build" is a required check on master, and a required check that never runs blocks the merge.
-# - vX.Y.Z git tag: build, test, push vX.Y.Z and latest.
+# - Merge to master that changes the Dockerfile: build, test and release the next version
+#   (push vX.Y.Z and latest, then create the git tag and GitHub release). See scripts/next-version.sh.
 # - Weekly (and on demand from master): rebuild to pick up Ubuntu patches,
-#   push latest, weekly and weekly-YYYYMMDD.
+#   push latest, weekly and weekly-YYYYMMDD. Also releases if the Dockerfile changed since the last release.
+# - vX.Y.Z git tag pushed by hand: build, test, push vX.Y.Z and latest.
 on:
   pull_request:
   push:
+    branches: [master]
+    paths: [Dockerfile] # not applied to tag pushes
     tags: ["v*"]
   schedule:
     - cron: "0 3 * * 1" # Mondays 03:00 UTC
@@ -39,8 +43,18 @@ jobs:
     permissions:
       contents: read
       security-events: write # upload scan results to the Security tab
+    outputs:
+      release: ${{ steps.version.outputs.release }}
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0 # full history and tags, to work out the next version
+
+      - name: Work out next version
+        id: version
+        if: github.ref == 'refs/heads/master'
+        run: ./scripts/next-version.sh >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4 # runs the arm64 apt steps and smoke test
 
@@ -54,9 +68,10 @@ jobs:
           flavor: latest=false
           tags: |
             type=ref,event=tag
+            type=raw,value=${{ steps.version.outputs.version }},enable=${{ steps.version.outputs.release == 'true' }}
             type=raw,value=latest,enable=${{ env.PUSH }}
-            type=raw,value=weekly,enable=${{ github.ref == 'refs/heads/master' }}
-            type=raw,value=weekly-{{date 'YYYYMMDD'}},enable=${{ github.ref == 'refs/heads/master' }}
+            type=raw,value=weekly,enable=${{ github.ref == 'refs/heads/master' && github.event_name != 'push' }}
+            type=raw,value=weekly-{{date 'YYYYMMDD'}},enable=${{ github.ref == 'refs/heads/master' && github.event_name != 'push' }}
 
       # Build each architecture into the local Docker daemon and test it before anything is pushed.
       # pull: always use the current base image digest rather than a cached one.
@@ -120,11 +135,34 @@ jobs:
           sbom: true
           provenance: mode=max
 
-  # Alert on Gotify when a weekly, manual or release build fails. PR failures show on the PR instead.
+  # Tag the commit that was just published and create its GitHub release.
+  # Tags created with GITHUB_TOKEN don't trigger workflows, so this doesn't start a second build.
+  release:
+    needs: build
+    if: needs.build.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$VERSION" --generate-notes
+
+  # Gotify alerts: a release went out (low priority), a Renovate PR failed its build (it won't
+  # auto-merge until fixed), or a weekly, manual or release build failed. Your own PR failures show on the PR.
   # Needs the repo secret GOTIFY_TOKEN (a Gotify application token); skipped if it isn't set.
   notify:
-    needs: build
-    if: ${{ always() && github.event_name != 'pull_request' && (contains(fromJSON('["failure","cancelled"]'), needs.build.result) || inputs.test-notification) }}
+    needs: [build, release]
+    if: >-
+      ${{ always() && (
+        inputs.test-notification ||
+        needs.release.result == 'success' ||
+        (github.event_name == 'pull_request' && github.event.pull_request.user.login == 'proxmox-three-renovate[bot]' && needs.build.result == 'failure') ||
+        (github.event_name != 'pull_request' && (contains(fromJSON('["failure","cancelled"]'), needs.build.result) || contains(fromJSON('["failure","cancelled"]'), needs.release.result)))
+      ) }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -132,25 +170,41 @@ jobs:
         env:
           GOTIFY_URL: https://gotify.adegoodyer.com/message
           GOTIFY_TOKEN: ${{ secrets.GOTIFY_TOKEN }}
-          RESULT: ${{ needs.build.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          RELEASE_RESULT: ${{ needs.release.result }}
+          VERSION: ${{ needs.build.outputs.version }}
           TEST: ${{ inputs.test-notification }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.build.outputs.version }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
           TRIGGER: ${{ github.event_name }} (${{ github.ref_name }})
         run: |
           if [ -z "$GOTIFY_TOKEN" ]; then
             echo "::warning::GOTIFY_TOKEN is not set, skipping notification"
             exit 0
           fi
+          url=$RUN_URL
           if [ "$TEST" = "true" ]; then
             title="🔔 kubernetes-admin-toolkit test notification"
             message="Gotify alerts from GitHub Actions are working. [View run]($RUN_URL)"
             priority=4
+          elif [ "$RELEASE_RESULT" = "success" ]; then
+            title="📦 kubernetes-admin-toolkit $VERSION released"
+            message="Published to Docker Hub. [Release notes]($RELEASE_URL)"
+            priority=2
+            url=$RELEASE_URL
+          elif [ -n "$PR_URL" ]; then
+            title="⚠️ kubernetes-admin-toolkit Renovate PR failed"
+            message="**$PR_TITLE** failed its build and won't auto-merge. [View PR]($PR_URL)"
+            priority=6
+            url=$PR_URL
           else
-            title="❌ kubernetes-admin-toolkit build $RESULT"
-            message="**$TRIGGER** did not complete. [View run]($RUN_URL)"
+            title="❌ kubernetes-admin-toolkit build failed"
+            message="**$TRIGGER** did not complete (build: $BUILD_RESULT, release: $RELEASE_RESULT). [View run]($RUN_URL)"
             priority=8
           fi
-          jq -n --arg title "$title" --arg message "$message" --argjson priority "$priority" --arg url "$RUN_URL" '{
+          jq -n --arg title "$title" --arg message "$message" --argjson priority "$priority" --arg url "$url" '{
             title: $title, message: $message, priority: $priority,
             extras: {
               "client::display": {contentType: "text/markdown"},

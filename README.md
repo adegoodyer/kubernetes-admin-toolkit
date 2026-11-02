@@ -145,7 +145,7 @@ docker rm -f toolkit
 ## Image Tags
 | Tag                         | Meaning                                                |
 | --------------------------- | ------------------------------------------------------ |
-| `vX.Y.Z`                    | Released version, built from the git tag               |
+| `vX.Y.Z`                    | Release, published whenever the Dockerfile changes     |
 | `latest`                    | Most recent release or weekly rebuild                  |
 | `weekly`, `weekly-YYYYMMDD` | Weekly rebuild of master with current security patches |
 
