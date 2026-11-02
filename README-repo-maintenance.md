@@ -3,14 +3,16 @@
 ## How Images Are Built and Published
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/release-pipeline-dark.svg">
-  <img alt="Pull requests are built and tested but publish nothing; version tags publish vX.Y.Z and latest; the weekly rebuild of master publishes latest, weekly and weekly-date." src="docs/images/release-pipeline-light.svg">
+  <img alt="Pull requests are built and tested but publish nothing; merges to master that change the Dockerfile publish the next vX.Y.Z and latest and create a GitHub release; the weekly rebuild of master publishes latest, weekly and weekly-date." src="docs/images/release-pipeline-light.svg">
 </picture>
 
-All three paths run the same workflow, [.github/workflows/build.yml](.github/workflows/build.yml). An image is only pushed after both architectures pass [scripts/smoke-test.sh](scripts/smoke-test.sh). Branch protection on `master` requires the `build` check to pass before any PR can be merged, admins included.
+All paths run the same workflow, [.github/workflows/build.yml](.github/workflows/build.yml). An image is only pushed after both architectures pass [scripts/smoke-test.sh](scripts/smoke-test.sh). Branch protection on `master` requires the `build` check to pass before any PR can be merged, admins included.
 
-- **Renovate** opens PRs on Monday mornings when the base images, yq, nats or GitHub Actions have new versions. Review and merge if CI is green.
-- **Weekly rebuild** (Mondays 03:00 UTC) rebuilds master to pick up Ubuntu security patches. No action needed.
-- **Releases** happen when you push a `vX.Y.Z` tag.
+The repo runs itself. You only need to step in when you add a tool or get a failure alert.
+
+- **Renovate** opens PRs on Monday mornings when the base images, yq, nats or GitHub Actions have new versions. They auto-merge once the `build` check passes. A PR that fails stays open and sends an alert.
+- **Releases** happen automatically when a merge to master changes the [Dockerfile](Dockerfile). See [Releasing](#releasing).
+- **Weekly rebuild** (Mondays 03:00 UTC) rebuilds master to pick up Ubuntu security patches and pushes `latest` and `weekly`. It doesn't create a release.
 
 ## Where Versions Live
 | What                   | Where                                                            | Updated by               |
@@ -57,19 +59,27 @@ docker buildx build --platform linux/arm64 --load -t kubernetes-admin-toolkit:ar
 ```
 
 ## Releasing
+Releases are automatic. When a push to master changes the Dockerfile, CI builds and tests the image, pushes the next `vX.Y.Z` and `latest`, then creates the git tag and a [GitHub release](https://github.com/adegoodyer/kubernetes-admin-toolkit/releases) with generated notes. Changes to docs, CI or Renovate config don't release.
+
+[scripts/next-version.sh](scripts/next-version.sh) picks the version from the commit messages since the last release:
+
+| Commit message contains                      | Bump  | Example            |
+| -------------------------------------------- | ----- | ------------------ |
+| `[major]`, `BREAKING CHANGE` or `type!:`     | major | `v1.2.3 -> v2.0.0` |
+| `[minor]` or starts with `feat:`             | minor | `v1.2.3 -> v1.3.0` |
+| anything else, including Renovate updates    | patch | `v1.2.3 -> v1.2.4` |
+
+So when you add a tool, title the PR `feat: add <tool>`. The squash-merge commit takes the PR title, which makes it a minor release.
+
 ```bash
-git switch master && git pull
+# see what the next release would be
+./scripts/next-version.sh
 
-# CI builds, tests and pushes vX.Y.Z and latest
-git tag -a v1.2.0 -m "v1.2.0"
-git push origin v1.2.0
-
-# watch the run, then create the GitHub release
-gh run watch
-gh release create v1.2.0 --generate-notes
+# release now instead of waiting for a merge (also runs the weekly rebuild)
+gh workflow run build.yml --ref master
 ```
 
-Check the result on [Docker Hub](https://hub.docker.com/r/adegoodyer/kubernetes-admin-toolkit/tags).
+Pushing a `vX.Y.Z` tag by hand still builds and pushes that version, but doesn't create a GitHub release. Check the result on [Docker Hub](https://hub.docker.com/r/adegoodyer/kubernetes-admin-toolkit/tags).
 
 ## Running the Weekly Build by Hand
 ```bash
@@ -77,8 +87,16 @@ gh workflow run build.yml --ref master
 gh run watch
 ```
 
-## Failure Alerts
-If a weekly, manual or release build fails, the workflow sends a Gotify notification (priority 8) with a link to the run. PR failures aren't sent; they show on the PR.
+## Notifications
+The workflow sends Gotify notifications for:
+
+| Event                                              | Priority |
+| -------------------------------------------------- | -------- |
+| A release went out                                 | 2        |
+| A Renovate PR failed its build (it won't merge)    | 6        |
+| A weekly, manual or release build failed           | 8        |
+
+Failures on your own PRs aren't sent; they show on the PR.
 
 ```bash
 # send a test notification without building anything
@@ -107,10 +125,14 @@ Rotate the token by generating a new one, running step 3 again, and revoking the
 Renovate runs from the self-hosted instance in the private `proxmox-three` repo (`platform/renovate/renovatejob-kubernetes-admin-toolkit.yaml`), as the GitHub App `proxmox-three-renovate`, every Monday at 06:00 UK.
 
 1. On GitHub, go to **Settings → Applications → proxmox-three-renovate → Configure**, and add `kubernetes-admin-toolkit` under **Repository access**.
-2. Merge the RenovateJob in `proxmox-three` so Argo CD deploys it.
-3. Start the first run from the operator UI (**run now**) rather than waiting for Monday. Renovate opens PRs labelled `dependencies` - no Dependency Dashboard issue (`dependencyDashboard: false`).
+2. Turn on auto-merge for the repo, so GitHub can merge Renovate PRs once `build` passes:
+   ```bash
+   gh api -X PATCH repos/adegoodyer/kubernetes-admin-toolkit -F allow_auto_merge=true
+   ```
+3. Merge the RenovateJob in `proxmox-three` so Argo CD deploys it.
+4. Start the first run from the operator UI (**run now**) rather than waiting for Monday. Renovate opens PRs labelled `dependencies` and turns on auto-merge for each one. There's no Dependency Dashboard issue (`dependencyDashboard: false`).
 
-Configuration is in [renovate.json](renovate.json).
+Configuration is in [renovate.json](renovate.json). Updates to yq, nats and GitHub Actions wait 3 days after their release (`minimumReleaseAge`) before Renovate opens a PR, in case a release is pulled. Base image updates aren't delayed.
 
 ### Gotify
 1. In Gotify (https://gotify.adegoodyer.com), go to **Apps → Create Application**. Name it `kubernetes-admin-toolkit` and copy its token.

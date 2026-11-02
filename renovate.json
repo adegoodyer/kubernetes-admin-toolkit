@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Run by the self-hosted Renovate in proxmox-three (platform/renovate), Mondays 06:00 UK - that job is the only schedule",
+  "description": "Run by the self-hosted Renovate in proxmox-three (platform/renovate), Mondays 06:00 UK - that job is the only schedule. PRs auto-merge once the required build check passes; Dockerfile changes then release themselves (see .github/workflows/build.yml)",
   "extends": [
     "config:recommended",
     "docker:pinDigests",
@@ -11,6 +11,24 @@
   "timezone": "Europe/London",
   "labels": [
     "dependencies"
+  ],
+  "automerge": true,
+  "automergeStrategy": "squash",
+  "platformAutomerge": true,
+  "packageRules": [
+    {
+      "description": "Auto-merged without review, so wait a few days in case a release is pulled or compromised",
+      "matchDatasources": [
+        "github-releases",
+        "github-tags"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor",
+        "patch"
+      ],
+      "minimumReleaseAge": "3 days"
+    }
   ],
   "customManagers": [
     {
