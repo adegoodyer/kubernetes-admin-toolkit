@@ -6,7 +6,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 # renovate: datasource=github-releases depName=mikefarah/yq
-ARG YQ_VERSION=v4.54.1
+ARG YQ_VERSION=v4.54.2
 # renovate: datasource=github-releases depName=nats-io/natscli
 ARG NATS_VERSION=v0.5.1
 # minio/mc was archived in Nov 2025; this is its final release.
