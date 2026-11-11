@@ -88,20 +88,7 @@ gh run watch
 ```
 
 ## Notifications
-The workflow sends Gotify notifications for:
-
-| Event                                              | Priority |
-| -------------------------------------------------- | -------- |
-| A release went out                                 | 2        |
-| A Renovate PR failed its build (it won't merge)    | 6        |
-| A weekly, manual or release build failed           | 8        |
-
-Failures on your own PRs aren't sent; they show on the PR.
-
-```bash
-# send a test notification without building anything
-gh workflow run build.yml --ref master -f test-notification=true
-```
+Failed runs are reported by GitHub's own email notifications (**Settings → Notifications → Actions** on your GitHub account). A failed Renovate PR also shows on the PR and won't auto-merge.
 
 GitHub turns off scheduled workflows in public repos after 60 days without commits. Merged Renovate PRs count as commits, but if the weekly build stops running, re-enable it under **Actions → Build**.
 
@@ -133,13 +120,3 @@ Renovate runs from the self-hosted instance in the private `proxmox-three` repo 
 4. Start the first run from the operator UI (**run now**) rather than waiting for Monday. Renovate opens PRs labelled `dependencies` and turns on auto-merge for each one. There's no Dependency Dashboard issue (`dependencyDashboard: false`).
 
 Configuration is in [renovate.json](renovate.json). Updates to yq, nats and GitHub Actions wait 3 days after their release (`minimumReleaseAge`) before Renovate opens a PR, in case a release is pulled. Base image updates aren't delayed.
-
-### Gotify
-1. In Gotify (https://gotify.adegoodyer.com), go to **Apps → Create Application**. Name it `kubernetes-admin-toolkit` and copy its token.
-2. Save it to the repo:
-   ```bash
-   gh secret set GOTIFY_TOKEN    # paste the token when prompted
-   ```
-3. Send a test: `gh workflow run build.yml --ref master -f test-notification=true`
-
-Without the secret, the notification step logs a warning and the build is unaffected.
