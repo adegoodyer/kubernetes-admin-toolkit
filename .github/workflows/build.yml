@@ -16,11 +16,6 @@ on:
   schedule:
     - cron: "0 3 * * 1" # Mondays 03:00 UTC
   workflow_dispatch:
-    inputs:
-      test-notification:
-        description: Only send a test Gotify notification (no build)
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -37,7 +32,6 @@ env:
 
 jobs:
   build:
-    if: ${{ !inputs.test-notification }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -59,6 +53,19 @@ jobs:
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4 # runs the arm64 apt steps and smoke test
 
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
+
+      - name: Debug DNS (temporary)
+        continue-on-error: true
+        run: |
+          echo "--- runner resolv.conf"; cat /etc/resolv.conf
+          echo "--- runner upstream"; grep nameserver /run/systemd/resolve/resolv.conf || true
+          echo "--- runner lookup"; getent hosts archive.ubuntu.com || echo RESOLVE_FAILED
+          echo "--- plain docker run"; docker run --rm ubuntu:26.04 sh -c 'cat /etc/resolv.conf; getent hosts archive.ubuntu.com || echo RESOLVE_FAILED'
+          echo "--- buildkit container resolv.conf"
+          for c in $(docker ps --format '{{.Names}}' | grep buildx_buildkit); do docker exec "$c" cat /etc/resolv.conf; done
+          echo "--- buildx RUN step"
+          printf 'FROM ubuntu:26.04\nRUN cat /etc/resolv.conf; getent hosts archive.ubuntu.com || echo RESOLVE_FAILED\n' \
+            | docker buildx build --no-cache --progress=plain - 2>&1 | grep -vE '^#[0-9]+ (sha256|resolve|DONE|extracting)'
 
       - name: Compute image tags
         id: meta
@@ -150,66 +157,3 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.build.outputs.version }}
         run: gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$VERSION" --generate-notes
-
-  # Gotify alerts: a release went out (low priority), a Renovate PR failed its build (it won't
-  # auto-merge until fixed), or a weekly, manual or release build failed. Your own PR failures show on the PR.
-  # Needs the repo secret GOTIFY_TOKEN (a Gotify application token); skipped if it isn't set.
-  notify:
-    needs: [build, release]
-    if: >-
-      ${{ always() && (
-        inputs.test-notification ||
-        needs.release.result == 'success' ||
-        (github.event_name == 'pull_request' && github.event.pull_request.user.login == 'proxmox-three-renovate[bot]' && needs.build.result == 'failure') ||
-        (github.event_name != 'pull_request' && (contains(fromJSON('["failure","cancelled"]'), needs.build.result) || contains(fromJSON('["failure","cancelled"]'), needs.release.result)))
-      ) }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Send Gotify notification
-        env:
-          GOTIFY_URL: https://gotify.adegoodyer.com/message
-          GOTIFY_TOKEN: ${{ secrets.GOTIFY_TOKEN }}
-          BUILD_RESULT: ${{ needs.build.result }}
-          RELEASE_RESULT: ${{ needs.release.result }}
-          VERSION: ${{ needs.build.outputs.version }}
-          TEST: ${{ inputs.test-notification }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ needs.build.outputs.version }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          TRIGGER: ${{ github.event_name }} (${{ github.ref_name }})
-        run: |
-          if [ -z "$GOTIFY_TOKEN" ]; then
-            echo "::warning::GOTIFY_TOKEN is not set, skipping notification"
-            exit 0
-          fi
-          url=$RUN_URL
-          if [ "$TEST" = "true" ]; then
-            title="🔔 kubernetes-admin-toolkit test notification"
-            message="Gotify alerts from GitHub Actions are working. [View run]($RUN_URL)"
-            priority=4
-          elif [ "$RELEASE_RESULT" = "success" ]; then
-            title="📦 kubernetes-admin-toolkit $VERSION released"
-            message="Published to Docker Hub. [Release notes]($RELEASE_URL)"
-            priority=2
-            url=$RELEASE_URL
-          elif [ -n "$PR_URL" ]; then
-            title="⚠️ kubernetes-admin-toolkit Renovate PR failed"
-            message="**$PR_TITLE** failed its build and won't auto-merge. [View PR]($PR_URL)"
-            priority=6
-            url=$PR_URL
-          else
-            title="❌ kubernetes-admin-toolkit build failed"
-            message="**$TRIGGER** did not complete (build: $BUILD_RESULT, release: $RELEASE_RESULT). [View run]($RUN_URL)"
-            priority=8
-          fi
-          jq -n --arg title "$title" --arg message "$message" --argjson priority "$priority" --arg url "$url" '{
-            title: $title, message: $message, priority: $priority,
-            extras: {
-              "client::display": {contentType: "text/markdown"},
-              "client::notification": {click: {url: $url}}
-            }
-          }' | curl -sS --fail-with-body -X POST "$GOTIFY_URL" \
-                 -H "X-Gotify-Key: $GOTIFY_TOKEN" -H "Content-Type: application/json" -d @- >/dev/null
-          echo "notification sent"
