@@ -16,10 +16,10 @@ docker run --rm ${PLATFORM:+--platform "$PLATFORM"} "$IMAGE" bash -euo pipefail 
 
   yq --version
   nats --version
-  mc --version | head -1
+  mc --version | sed -n 1p
   psql --version
   jq --version
-  curl -sS --version | head -1
+  curl -sS --version | sed -n 1p
   test -r /eu-west-2-bundle.pem && openssl x509 -noout -subject -in /eu-west-2-bundle.pem
   [ "$(date +%Z)" = GMT ] && locale | grep -q "LANG=en_GB.utf8"
   echo "OK: all tools present ($(uname -m))"

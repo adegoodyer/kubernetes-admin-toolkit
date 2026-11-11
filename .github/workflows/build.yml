@@ -211,5 +211,7 @@ jobs:
               "client::notification": {click: {url: $url}}
             }
           }' | curl -sS --fail-with-body -X POST "$GOTIFY_URL" \
-                 -H "X-Gotify-Key: $GOTIFY_TOKEN" -H "Content-Type: application/json" -d @- >/dev/null
+                 -H "X-Gotify-Key: $GOTIFY_TOKEN" -H "Content-Type: application/json" -d @- \
+                 -o "$RUNNER_TEMP/gotify-response" \
+            || { echo "::error::Gotify rejected the notification. Response:"; head -c 2000 "$RUNNER_TEMP/gotify-response"; exit 1; }
           echo "notification sent"
