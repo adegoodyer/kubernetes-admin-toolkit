@@ -54,19 +54,6 @@ jobs:
 
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
-      - name: Debug DNS (temporary)
-        continue-on-error: true
-        run: |
-          echo "--- runner resolv.conf"; cat /etc/resolv.conf
-          echo "--- runner upstream"; grep nameserver /run/systemd/resolve/resolv.conf || true
-          echo "--- runner lookup"; getent hosts archive.ubuntu.com || echo RESOLVE_FAILED
-          echo "--- plain docker run"; docker run --rm ubuntu:26.04 sh -c 'cat /etc/resolv.conf; getent hosts archive.ubuntu.com || echo RESOLVE_FAILED'
-          echo "--- buildkit container resolv.conf"
-          for c in $(docker ps --format '{{.Names}}' | grep buildx_buildkit); do docker exec "$c" cat /etc/resolv.conf; done
-          echo "--- buildx RUN step"
-          printf 'FROM ubuntu:26.04\nRUN cat /etc/resolv.conf; getent hosts archive.ubuntu.com || echo RESOLVE_FAILED\n' \
-            | docker buildx build --no-cache --progress=plain - 2>&1 | grep -vE '^#[0-9]+ (sha256|resolve|DONE|extracting)'
-
       - name: Compute image tags
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
