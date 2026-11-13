@@ -10,7 +10,7 @@ All paths run the same workflow, [.github/workflows/build.yml](.github/workflows
 
 The repo runs itself. You only need to step in when you add a tool or get a failure alert.
 
-- **Renovate** opens PRs on Monday mornings when the base images, yq, nats or GitHub Actions have new versions. They auto-merge once the `build` check passes. A PR that fails stays open and sends an alert.
+- **Renovate** opens PRs on Monday mornings when the base images, yq, nats or GitHub Actions have new versions. They auto-merge once the `build` check passes, except majors (a new Ubuntu release, an action's major), which wait for you to merge. A PR that fails stays open and sends an alert.
 - **Releases** happen automatically when a merge to master changes the [Dockerfile](Dockerfile). See [Releasing](#releasing).
 - **Weekly rebuild** (Mondays 03:00 UTC) rebuilds master to pick up Ubuntu security patches and pushes `latest` and `weekly`. It doesn't create a release.
 
